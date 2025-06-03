@@ -74,7 +74,7 @@
   <form id="latlon-form">
     <input type="number" id="latitude" placeholder="Latitude" step="any" required />
     <input type="number" id="longitude" placeholder="Longitude" step="any" required />
-    <input type="number" id="location name"placeholder="location name" step="any"required/>
+    
     <button type="submit">Get Weather</button>
   </form>
 
@@ -97,7 +97,15 @@
       if (!response.ok) throw new Error('Weather API request failed');
       return await response.json();
     }
-
+async function reverseGeocode(lat, lon) {
+  const url = https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json;
+  const response = await fetch(url, {
+    headers: { 'User-Agent': 'Mozilla/5.0' }
+  });
+  if (!response.ok) throw new Error('Failed to get location name');
+  const data = await response.json();
+  return data.display_name || 'Unknown location';
+}
     function renderWeather(data) {
       if (!data) {
         weatherContainer.innerHTML = '<p>Error loading weather data.</p>';
