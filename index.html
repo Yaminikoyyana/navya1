@@ -7,7 +7,7 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background:blue#f2f2f2;
+      background: #f2f2f2;
       margin: 0;
       padding: 20px;
     }
@@ -68,13 +68,11 @@
 <body>
   <header>
     <h1>Weather Forecast by Latitude & Longitude</h1>
-    
   </header>
 
   <form id="latlon-form">
     <input type="number" id="latitude" placeholder="Latitude" step="any" required />
     <input type="number" id="longitude" placeholder="Longitude" step="any" required />
-    
     <button type="submit">Get Weather</button>
   </form>
 
@@ -92,21 +90,23 @@
     const downloadBtn = document.getElementById('downloadBtn');
 
     async function fetchWeather(lat, lon) {
-      const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&timezone=auto&current_weather=true&hourly=temperature_2m,windspeed_10m,weathercode,winddirection_10m&daily=temperature_2m_max,temperature_2m_min,weathercode`;
+      const apiUrl = https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&timezone=auto&current_weather=true&hourly=temperature_2m,windspeed_10m,weathercode,winddirection_10m&daily=temperature_2m_max,temperature_2m_min,weathercode;
       const response = await fetch(apiUrl);
       if (!response.ok) throw new Error('Weather API request failed');
       return await response.json();
     }
-async function reverseGeocode(lat, lon) {
-  const url = https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json;
-  const response = await fetch(url, {
-    headers: { 'User-Agent': 'Mozilla/5.0' }
-  });
-  if (!response.ok) throw new Error('Failed to get location name');
-  const data = await response.json();
-  return data.display_name || 'Unknown location';
-}
-    function renderWeather(data) {
+
+    async function reverseGeocode(lat, lon) {
+      const url = https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json;
+      const response = await fetch(url, {
+        headers: { 'User-Agent': 'Mozilla/5.0' }
+      });
+      if (!response.ok) throw new Error('Failed to get location name');
+      const data = await response.json();
+      return data.display_name || 'Unknown location';
+    }
+
+    function renderWeather(data, locationName) {
       if (!data) {
         weatherContainer.innerHTML = '<p>Error loading weather data.</p>';
         downloadBtn.style.display = 'none';
@@ -120,10 +120,11 @@ async function reverseGeocode(lat, lon) {
       let html = `
         <div class="section">
           <h2>Location Information</h2>
+          <p><strong>Name:</strong> ${locationName}</p>
           <p><strong>Latitude:</strong> ${data.latitude}</p>
           <p><strong>Longitude:</strong> ${data.longitude}</p>
-          ${data.timezone ? `<p><strong>Timezone:</strong> ${data.timezone}</p>` : ''}
-          ${data.elevation ? `<p><strong>Elevation:</strong> ${data.elevation} m</p>` : ''}
+          ${data.timezone ? <p><strong>Timezone:</strong> ${data.timezone}</p> : ''}
+          ${data.elevation ? <p><strong>Elevation:</strong> ${data.elevation} m</p> : ''}
         </div>`;
 
       if (data.current_weather) {
@@ -140,7 +141,7 @@ async function reverseGeocode(lat, lon) {
 
       if (data.hourly?.time) {
         html += `<div class="section">
-          <h2>Hourly Forecast </h2>
+          <h2>Hourly Forecast</h2>
           <table><thead><tr>
             <th>Time</th><th>Temp (°C)</th><th>Wind Speed (km/h)</th><th>Wind Dir (°)</th>
           </tr></thead><tbody>`;
@@ -152,7 +153,7 @@ async function reverseGeocode(lat, lon) {
             <td>${data.hourly.winddirection_10m[i]}</td>
           </tr>`;
         }
-        html += `</tbody></table></div>`;
+        html += </tbody></table></div>;
       }
 
       if (data.daily?.time) {
@@ -169,7 +170,7 @@ async function reverseGeocode(lat, lon) {
             <td>${data.daily.weathercode[i]}</td>
           </tr>`;
         }
-        html += `</tbody></table></div>`;
+        html += </tbody></table></div>;
       }
 
       weatherContainer.innerHTML = html;
@@ -186,10 +187,13 @@ async function reverseGeocode(lat, lon) {
       }
 
       try {
-        const data = await fetchWeather(lat, lon);
-        renderWeather(data);
+        const [weatherData, locationName] = await Promise.all([
+          fetchWeather(lat, lon),
+          reverseGeocode(lat, lon)
+        ]);
+        renderWeather(weatherData, locationName);
       } catch (err) {
-        weatherContainer.innerHTML = `<p style="color:red;">${err.message}</p>`;
+        weatherContainer.innerHTML = <p style="color:red;">${err.message}</p>;
       }
     });
   </script>
